@@ -10,7 +10,7 @@
 
   const missing = $derived(notFound || (error instanceof OverfinError && error.status === 404));
   $effect(() => {
-    if (isError(error, 'profile-required')) replace('#/profiles');
+    if (isError(error, 'profile-required')) replace('/profiles');
   });
 </script>
 
@@ -20,5 +20,5 @@
   {:else if !isError(error, 'profile-required')}
     <p class="error">{explain(error)}</p>
   {/if}
-  <a href="#/">{t('common.backHome')}</a>
+  <a href="/">{t('common.backHome')}</a>
 </div>

@@ -16,16 +16,16 @@
 </script>
 
 <header>
-  <a class="brand" href="#/">Overfin</a>
+  <a class="brand" href="/">Overfin</a>
   <nav>
-    <a href="#/" class:active={here.length === 0}>{t('nav.home')}</a>
+    <a href="/" class:active={here.length === 0}>{t('nav.home')}</a>
     {#each session.libraries as library (library.id)}
-      <a href="#/library/{library.id}" class:active={here[0] === 'library' && here[1] === library.id}>{library.name}</a>
+      <a href="/library/{library.id}" class:active={here[0] === 'library' && here[1] === library.id}>{library.name}</a>
     {/each}
   </nav>
-  <a class="link" href="#/profiles">{session.me?.activeProfile?.name ?? t('nav.chooseProfile')}</a>
-  <a class="link" href="#/manage">{t('nav.profiles')}</a>
-  <a class="link" href="#/account">{t('nav.account')}</a>
+  <a class="link" href="/profiles">{session.me?.activeProfile?.name ?? t('nav.chooseProfile')}</a>
+  <a class="link" href="/manage">{t('nav.profiles')}</a>
+  <a class="link" href="/account">{t('nav.account')}</a>
   <select aria-label={t('app.language')} value={i18n.locale}
     onchange={(event) => i18n.set(event.currentTarget.value as Locale)}>
     {#each locales as locale (locale.code)}

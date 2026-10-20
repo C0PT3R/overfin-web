@@ -56,11 +56,11 @@
         <h1>{item.name}</h1>
         {#if item.episode}
           <p>
-            <a href="#/item/{item.episode.seriesId}">{item.episode.seriesName || t('common.series')}</a>
+            <a href="/item/{item.episode.seriesId}">{item.episode.seriesName || t('common.series')}</a>
             · {t('item.seasonEpisode', { season: item.episode.seasonNumber ?? '?', episode: item.episode.number ?? '?' })}
           </p>
         {:else if item.season}
-          <p><a href="#/item/{item.season.seriesId}">{item.season.seriesName || t('common.series')}</a></p>
+          <p><a href="/item/{item.season.seriesId}">{item.season.seriesName || t('common.series')}</a></p>
         {/if}
         <div class="meta">
           {#if item.year}<span>{item.year}</span>{/if}
@@ -107,7 +107,7 @@
     <p class="muted">
       {#each crew as credit, i (credit.person.id + credit.role)}
         {i ? ' · ' : ''}{credit.role === 'director' ? t('item.directedBy') : t('item.writtenBy')}
-        <a href="#/person/{credit.person.id}">{credit.person.name}</a>
+        <a href="/person/{credit.person.id}">{credit.person.name}</a>
       {/each}
     </p>
   {/if}

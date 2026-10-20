@@ -27,7 +27,7 @@
       await overfin.activateProfile(p.id, pin);
       setPicked(true);
       await refresh();
-      go('#/');
+      go('/');
     } catch (err) {
       if (isError(err, 'pin-required')) return choose(p);
       message = explain(err);
@@ -102,7 +102,7 @@
     <!-- Managing needs a profile: shown once one is active. -->
     {#if session.me?.activeProfile}
       <p class="center">
-        <a href="#/manage">{session.me.activeProfile.owner ? t('profiles.manage') : t('profiles.mine')}</a>
+        <a href="/manage">{session.me.activeProfile.owner ? t('profiles.manage') : t('profiles.mine')}</a>
       </p>
     {/if}
   {:catch error}

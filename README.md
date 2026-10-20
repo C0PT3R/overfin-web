@@ -21,8 +21,9 @@ TypeScript, on Overfin's
   resume, and taking playback back from another device.
 - **English and French**, following the browser until the person picks one.
 
-Every screen lives in the address (`#/item/…`, `#/play/…`), so a reload
-comes back to it.
+Every screen has a real address (`/item/…`, `/library/…?sort=name`), so a
+reload, a bookmark or a shared link comes back to it, through the login if
+need be. The gateway answers those paths with the app.
 
 ## How it's built
 

@@ -55,7 +55,7 @@
       }
       items.push(...page.items);
       if (page.totalCount !== undefined) total = page.totalCount;
-      if (page.seed && !seed) history.replaceState(null, '', `#/library/${id}?sort=random&seed=${page.seed}`);
+      if (page.seed && !seed) history.replaceState(null, '', `/library/${id}?sort=random&seed=${page.seed}`);
       if (!page.nextCursor) finished = true;
     } catch (err) {
       error = err;
@@ -74,7 +74,7 @@
 {:else}
   <h1>{library.name}</h1>
   <div class="toolbar">
-    <select aria-label={t('library.sort')} value={sort} onchange={(event) => go(`#/library/${id}?sort=${event.currentTarget.value}`)}>
+    <select aria-label={t('library.sort')} value={sort} onchange={(event) => go(`/library/${id}?sort=${event.currentTarget.value}`)}>
       {#each sorts as value (value)}
         <option {value}>{t(`library.sort.${value}` as Key)}</option>
       {/each}

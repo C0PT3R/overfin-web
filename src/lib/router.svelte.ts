@@ -1,17 +1,22 @@
-// Every screen lives in the address (#/item/…), so a reload comes back to it.
+// Every screen has a real address (/item/123, /library/abc?sort=name), so a
+// reload, a bookmark or a shared link comes back to it, through the login if
+// need be. Links to the site's own pages change the address without
+// reloading; the gateway answers those paths with this app.
 export interface Route {
-  /** The path's parts: #/item/123 is ["item", "123"]. */
+  /** The path's parts: /item/123 is ["item", "123"]. */
   parts: string[];
   params: URLSearchParams;
 }
 
 function parse(): Route {
-  const [path = '', query = ''] = location.hash.slice(1).split('?');
-  return { parts: path.split('/').filter(Boolean), params: new URLSearchParams(query) };
+  return {
+    parts: location.pathname.split('/').filter(Boolean).map((part) => decodeURIComponent(part)),
+    params: new URLSearchParams(location.search),
+  };
 }
 
 let current = $state<Route>(parse());
-window.addEventListener('hashchange', () => {
+window.addEventListener('popstate', () => {
   current = parse();
 });
 
@@ -22,12 +27,26 @@ export const router = {
 };
 
 /** go shows another screen, adding it to the history. */
-export function go(hash: string) {
-  location.hash = hash;
+export function go(path: string) {
+  if (path === location.pathname + location.search) return;
+  history.pushState(null, '', path);
+  current = parse();
 }
 
 /** replace changes the address without a new history entry. */
-export function replace(hash: string) {
-  history.replaceState(null, '', hash);
+export function replace(path: string) {
+  history.replaceState(null, '', path);
   current = parse();
 }
+
+// Clicks on links to the site's own pages stay in the app. Anything else (a
+// new tab, a download, another site, the API) is left to the browser.
+document.addEventListener('click', (event) => {
+  if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  const link = (event.target as Element | null)?.closest?.('a');
+  if (!link || link.target || link.hasAttribute('download')) return;
+  const url = new URL(link.href, location.href);
+  if (url.origin !== location.origin || url.pathname === '/api' || url.pathname.startsWith('/api/')) return;
+  event.preventDefault();
+  go(url.pathname + url.search);
+});

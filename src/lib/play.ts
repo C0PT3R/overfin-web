@@ -7,7 +7,7 @@ let chosenStart: number | undefined;
 
 export function play(itemId: string, positionMs: number) {
   chosenStart = positionMs;
-  go(`#/play/${itemId}`);
+  go(`/play/${itemId}`);
 }
 
 /** takeStart returns the chosen start, once. */

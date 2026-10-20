@@ -43,7 +43,7 @@
   }
 
   $effect(() => {
-    if (!me) replace('#/profiles');
+    if (!me) replace('/profiles');
   });
 </script>
 

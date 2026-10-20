@@ -6,7 +6,7 @@
   let { person, sub = '' }: { person: Credit['person']; sub?: string } = $props();
 </script>
 
-<a class="card" href="#/person/{person.id}">
+<a class="card" href="/person/{person.id}">
   <div class="poster">
     {#if person.image}
       <img src={overfin.imageUrl(person.image, 'small')} alt="" loading="lazy" />

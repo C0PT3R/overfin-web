@@ -41,7 +41,7 @@
     // "Who's watching?" once per tab, when there's a choice.
     const where = router.route.parts[0];
     if ((!session.me.activeProfile || (profiles.length > 1 && !picked())) && where !== 'play' && where !== 'profiles') {
-      go('#/profiles');
+      go('/profiles');
     }
     phase = { kind: 'ready' };
   }
