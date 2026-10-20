@@ -1,8 +1,8 @@
 # overfin-web
 
-The web client of [Overfin](https://github.com/C0PT3R/overfin), served by
+The web client of [Overfin](https://github.com/C0PT3R/overfin-gateway), served by
 Overfin by default: plain HTML, CSS and JavaScript on Overfin's
-[JavaScript SDK](https://github.com/C0PT3R/overfin/tree/main/sdk/js), with no
+[JavaScript SDK](https://github.com/C0PT3R/overfin-gateway/tree/main/sdk/js), with no
 framework and no build step. `app.js` is only screens; the SDK does the
 rest.
 
