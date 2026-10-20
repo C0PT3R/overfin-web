@@ -1,0 +1,13 @@
+# Security
+
+overfin-web is a client of [Overfin](https://github.com/C0PT3R/overfin): the
+security rules it follows (text from the server is only ever set with
+`textContent`, everything comes from the site itself, nothing is sent to a
+third party) are part of Overfin's, in its
+[SECURITY.md](https://github.com/C0PT3R/overfin/blob/main/SECURITY.md).
+
+## Reporting a vulnerability
+
+Please report it privately, through this repository's **Security** tab
+(*Report a vulnerability*), not in a public issue. You'll get an answer, and
+credit if you'd like it, once it's fixed.
