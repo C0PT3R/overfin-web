@@ -8,12 +8,14 @@
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
+#app { min-height: 100vh; }
 [hidden] { display: none !important; }
 body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 system-ui, sans-serif; }
 a { color: inherit; text-decoration: none; }
 button, input, select { font: inherit; color: inherit; }
 button { cursor: pointer; background: var(--panel); border: 1px solid #2c3039; border-radius: 6px; padding: .45em .9em; }
 button.primary { background: var(--accent); border-color: var(--accent); color: #0b1020; font-weight: 600; }
+button.danger { border-color: var(--danger); color: var(--danger); }
 button.link { background: none; border: none; color: var(--muted); padding: .3em .5em; }
 a.link { color: var(--muted); padding: .3em .5em; }
 button.link:hover, a.link:hover, nav a:hover { color: var(--text); }
@@ -69,5 +71,14 @@ form.stack { display: grid; gap: .6rem; text-align: left; }
 .player .skip { position: absolute; right: 2rem; bottom: 6rem; }
 .player .notice { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0, 0, 0, .8); text-align: center; padding: 2rem; }
 
-#toast { position: fixed; left: 50%; bottom: 1.5rem; transform: translateX(-50%); background: #2a2f3a; padding: .6rem 1rem; border-radius: 8px; z-index: 20; display: none; }
-#toast.show { display: block; }
+/* Where the keyboard or a TV remote is: always visible. */
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.card:focus-visible { outline: none; }
+.card:focus-visible .poster { outline: 3px solid var(--accent); }
+.profile:focus-visible { outline: none; }
+.profile:focus-visible .avatar { outline: 3px solid var(--accent); }
+
+dialog { background: var(--panel); color: var(--text); border: 1px solid #2c3039; border-radius: 10px; padding: 1.2rem; max-width: 26rem; }
+dialog::backdrop { background: rgba(0, 0, 0, .7); }
+dialog input { width: 100%; }
+dialog .actions { justify-content: flex-end; margin-bottom: 0; }

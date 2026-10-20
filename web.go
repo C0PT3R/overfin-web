@@ -1,12 +1,28 @@
-// Package web is overfin-web, Overfin's own web client: plain HTML, CSS and
-// JavaScript on the JavaScript SDK, with no build step. Overfin serves it by
-// default; an operator can serve their own client instead ([site] in the
-// configuration).
+// Package web is overfin-web, Overfin's web client, built (dist/) and ready
+// to serve. Overfin's official build bundles it; the sources are in src/.
 package web
 
-import "embed"
+import (
+	"embed"
+	"io/fs"
+)
 
-// Files are the client's files, served as they are.
+//go:embed all:dist
+var dist embed.FS
+
+// Files are the client's built files, served as they are.
+var Files fs.FS = mustSub(dist, "dist")
+
+// SDK is the copy of Overfin's JavaScript SDK the client is built with, so
+// Overfin can check it matches its own.
 //
-//go:embed index.html app.js style.css overfin.js vendor
-var Files embed.FS
+//go:embed src/lib/sdk/overfin.js
+var SDK []byte
+
+func mustSub(f fs.FS, dir string) fs.FS {
+	sub, err := fs.Sub(f, dir)
+	if err != nil {
+		panic(err)
+	}
+	return sub
+}

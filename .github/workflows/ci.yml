@@ -1,5 +1,6 @@
-# Checks every push and pull request: the Go package that bundles the files
-# builds (every embedded file exists), and the JavaScript parses.
+# Checks every push and pull request: types, tests, and that dist/ (what
+# Overfin embeds) is exactly what the sources build; then the Go package
+# that bundles it.
 name: CI
 
 on:
@@ -15,6 +16,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      # .npmrc turns install scripts off.
+      - name: Install
+        run: npm ci
+
+      - name: Types
+        run: npm run check
+
+      - name: Tests
+        run: npm test
+
+      - name: The built files match the sources
+        run: |
+          npm run build
+          git diff --exit-code -- dist || { echo "dist/ is out of date: run npm run build and commit it"; exit 1; }
+          test -z "$(git status --porcelain -- dist)" || { git status -- dist; exit 1; }
+
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
@@ -24,10 +46,3 @@ jobs:
           test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
           go vet ./...
           go build ./...
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-
-      - name: JavaScript
-        run: for f in app.js overfin.js; do node --check "$f"; done

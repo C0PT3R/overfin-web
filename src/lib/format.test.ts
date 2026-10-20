@@ -1,0 +1,33 @@
+import { describe, expect, it } from 'vitest';
+import { clock, duration } from './format';
+import { i18n, t, tn } from './i18n.svelte';
+
+describe('format', () => {
+  it('shows positions as a clock', () => {
+    expect(clock(0)).toBe('0:00');
+    expect(clock(125_000)).toBe('2:05');
+    expect(clock(3_725_000)).toBe('1:02:05');
+  });
+  it('shows lengths in words, in the current language', () => {
+    i18n.set('en');
+    expect(duration(42 * 60_000)).toBe('42 min');
+    expect(duration(102 * 60_000)).toBe('1 h 42 min');
+  });
+});
+
+describe('t', () => {
+  it('fills in values, and leaves unknown ones visible', () => {
+    i18n.set('en');
+    expect(t('home.latest', { library: 'Movies' })).toBe('Latest in Movies');
+    expect(t('home.latest')).toBe('Latest in {library}');
+  });
+  it('picks singular and plural forms by language', () => {
+    i18n.set('en');
+    expect(tn('library.count', 1)).toBe('1 item');
+    expect(tn('library.count', 0)).toBe('0 items');
+    i18n.set('fr');
+    // French counts 0 and 1 as singular.
+    expect(tn('library.count', 0)).toBe('0 titre');
+    expect(tn('library.count', 2)).toBe('2 titres');
+  });
+});

@@ -1,6 +1,11 @@
-# Keeps the CI's GitHub Actions up to date, by pull request.
+# Keeps dependencies up to date, by pull request: npm packages (the build
+# tools, Svelte, hls.js) and the CI's GitHub Actions.
 version: 2
 updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
   - package-ecosystem: github-actions
     directory: /
     schedule:
