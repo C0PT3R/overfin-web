@@ -2,20 +2,21 @@
      limits, PINs, deleting) and every device; another profile only its own
      PIN and devices. -->
 <script lang="ts">
-  import type { Profile } from '../lib/sdk/overfin.js';
+  import type { Profile, Ratings } from '../lib/sdk/overfin.js';
   import { overfin } from '../lib/client';
   import { confirmed } from '../lib/confirmed';
   import { confirm } from '../lib/dialog.svelte';
   import { i18n, t } from '../lib/i18n.svelte';
   import { replace } from '../lib/router.svelte';
   import { session } from '../lib/session.svelte';
+  import CeilingPicker from '../components/CeilingPicker.svelte';
   import PageError from '../components/PageError.svelte';
 
   const me = $derived(session.me?.activeProfile);
   const pinPattern = '[0-9]{4,8}';
 
   // Each profile's form, and its message, set up as the profiles load.
-  interface Form { name: string; kids: boolean; ceiling: string; pin: string; message: string }
+  interface Form { name: string; kids: boolean; movie: string; series: string; pin: string; message: string }
   const forms = $state<Record<string, Form>>({});
   let devicesMessage = $state('');
 
@@ -23,12 +24,16 @@
   async function load() {
     const [all, ratings, sessions] = await Promise.all([
       overfin.profiles(),
-      me?.owner ? overfin.ratings() : Promise.resolve([]),
+      me?.owner ? overfin.ratings() : Promise.resolve<Ratings>({ country: '', movie: [], series: [] }),
       overfin.sessions(),
     ]);
+    if (me?.owner) session.kidsNeedLimits = all.some((p) => p.ceilingsNeeded);
     const profiles = me?.owner ? all : all.filter((p) => p.id === me?.id);
     for (const p of profiles) {
-      forms[p.id] = { name: p.name, kids: p.kind === 'kids', ceiling: p.ratingCeiling ?? ratings[0] ?? '', pin: '', message: '' };
+      forms[p.id] = {
+        name: p.name, kids: p.kind === 'kids', pin: '', message: '',
+        movie: p.movieCeiling ?? ratings.movie[0]?.name ?? '', series: p.seriesCeiling ?? ratings.series[0]?.name ?? '',
+      };
     }
     return { profiles, ratings, sessions };
   }
@@ -57,8 +62,12 @@
         {@const f = forms[p.id]}
         <div class="panel">
           <h2>
-            {p.name}{#if p.owner}&nbsp;({t('manage.owner')}){/if}{#if p.kind === 'kids'} · {t('manage.kidsUpTo', { rating: p.ratingCeiling ?? '' })}{/if}
+            {p.name}{#if p.owner}&nbsp;({t('manage.owner')}){/if}
+            {#if p.kind === 'kids'}
+              · {p.ceilingsNeeded ? t('manage.kidsNoLimits') : t('manage.kidsLimits', { movie: p.movieCeiling ?? '', series: p.seriesCeiling ?? '' })}
+            {/if}
           </h2>
+          {#if p.ceilingsNeeded && me.owner}<p class="error">{t('manage.limitsMissing')}</p>{/if}
 
           {#if me.owner}
             <div class="toolbar">
@@ -67,16 +76,16 @@
             </div>
           {/if}
 
-          <!-- Limits: kids or standard, and the rating ceiling. Changing them
-               needs the owner's PIN, if the owner has one. -->
+          <!-- Limits: kids or standard, and the ceilings for films and series.
+               Changing them needs the owner's PIN, if the owner has one. -->
           {#if me.owner && !p.owner}
             <div class="toolbar">
               <label><input type="checkbox" bind:checked={f.kids} /> {t('manage.kidsProfile')}</label>
-              <select bind:value={f.ceiling} aria-label={t('manage.kidsProfile')}>
-                {#each ratings as rating (rating)}<option value={rating}>{rating}</option>{/each}
-              </select>
+              {#if f.kids}<CeilingPicker {ratings} bind:movie={f.movie} bind:series={f.series} />{/if}
               <button onclick={() => act(p, (pin) => {
-                const change = f.kids ? { kind: 'kids' as const, ratingCeiling: f.ceiling } : { kind: 'standard' as const };
+                const change = f.kids
+                  ? { kind: 'kids' as const, movieCeiling: f.movie, seriesCeiling: f.series }
+                  : { kind: 'standard' as const };
                 return overfin.updateProfile(p.id, pin ? { ...change, pin } : change);
               }, t('manage.ownerPin'))}>{t('manage.saveLimits')}</button>
             </div>

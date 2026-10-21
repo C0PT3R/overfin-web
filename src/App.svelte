@@ -41,6 +41,7 @@
     const [libraries, profiles] = await Promise.all([overfin.libraries().catch(() => []), overfin.profiles()]);
     session.libraries = libraries;
     session.discovery = await offersDiscovery();
+    session.kidsNeedLimits = profiles.some((p) => p.ceilingsNeeded) && !!session.me.activeProfile?.owner;
     // "Who's watching?" once per tab, when there's a choice.
     const where = router.route.parts[0];
     if ((!session.me.activeProfile || (profiles.length > 1 && !picked())) && where !== 'play' && where !== 'profiles') {
@@ -75,6 +76,13 @@
 {:else}
   {#if !bare}<Header />{/if}
   <main>
+    <!-- A kids profile without limits shows nothing: its owner is asked to
+         choose them. -->
+    {#if !bare && session.me?.activeProfile?.ceilingsNeeded}
+      <p class="notice">{t('notice.noLimits')}</p>
+    {:else if !bare && session.kidsNeedLimits && route.parts[0] !== 'manage'}
+      <p class="notice">{t('notice.kidsNeedLimits')} <a href="/manage">{t('notice.chooseLimits')}</a></p>
+    {/if}
     {#key key}
       {#if route.parts.length === 0}
         <Home />

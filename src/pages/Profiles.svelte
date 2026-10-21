@@ -1,12 +1,13 @@
 <!-- "Who's watching?": choosing a profile (with its PIN, if it has one),
      and, for the owner, adding one. -->
 <script lang="ts">
-  import type { Profile } from '../lib/sdk/overfin.js';
+  import type { Profile, Ratings } from '../lib/sdk/overfin.js';
   import { explain, isError, overfin } from '../lib/client';
   import { askPin } from '../lib/dialog.svelte';
   import { t } from '../lib/i18n.svelte';
   import { go } from '../lib/router.svelte';
   import { refresh, session, setPicked } from '../lib/session.svelte';
+  import CeilingPicker from '../components/CeilingPicker.svelte';
   import PageError from '../components/PageError.svelte';
 
   let message = $state('');
@@ -38,13 +39,15 @@
   let adding = $state(false);
   let name = $state('');
   let kids = $state(false);
-  let ceiling = $state('');
-  let ratings = $state<string[]>([]);
+  let movie = $state('');
+  let series = $state('');
+  let ratings = $state<Ratings>({ country: '', movie: [], series: [] });
 
   async function startAdding() {
     message = '';
     ratings = await overfin.ratings();
-    ceiling = ratings[0] ?? '';
+    movie = ratings.movie[0]?.name ?? '';
+    series = ratings.series[0]?.name ?? '';
     name = '';
     kids = false;
     adding = true;
@@ -54,7 +57,7 @@
     event.preventDefault();
     message = '';
     try {
-      await overfin.createProfile(kids ? { name, kind: 'kids', ratingCeiling: ceiling } : { name });
+      await overfin.createProfile(kids ? { name, kind: 'kids', movieCeiling: movie, seriesCeiling: series } : { name });
       adding = false;
       reload++;
     } catch (err) {
@@ -68,12 +71,8 @@
     <h1>{t('profiles.new')}</h1>
     <form class="stack panel" onsubmit={add}>
       <label>{t('manage.name')} <input bind:value={name} maxlength="32" required /></label>
-      <label>
-        <input type="checkbox" bind:checked={kids} /> {t('manage.kidsProfile')}
-        <select bind:value={ceiling} aria-label={t('manage.kidsProfile')}>
-          {#each ratings as rating (rating)}<option value={rating}>{rating}</option>{/each}
-        </select>
-      </label>
+      <label><input type="checkbox" bind:checked={kids} /> {t('manage.kidsProfile')}</label>
+      {#if kids}<CeilingPicker {ratings} bind:movie bind:series />{/if}
       <button class="primary" type="submit">{t('common.create')}</button>
       <button type="button" onclick={() => (adding = false)}>{t('common.cancel')}</button>
     </form>
@@ -90,7 +89,7 @@
           <div class="avatar">{p.name.slice(0, 1).toUpperCase()}</div>
           {p.name}
           <div class="badge">
-            {[p.kind === 'kids' ? t('profiles.kids', { rating: p.ratingCeiling ?? '' }) : '', p.hasPin ? '🔒' : ''].filter(Boolean).join(' ')}
+            {[p.kind === 'kids' ? t('profiles.kids') : '', p.hasPin ? '🔒' : ''].filter(Boolean).join(' ')}
           </div>
         </button>
       {/each}

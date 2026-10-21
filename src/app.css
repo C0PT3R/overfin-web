@@ -22,6 +22,8 @@ button.link:hover, a.link:hover, nav a:hover { color: var(--text); }
 input, select { background: var(--panel); border: 1px solid #2c3039; border-radius: 6px; padding: .45em .6em; }
 .muted { color: var(--muted); }
 .error { color: var(--danger); }
+main > .notice { background: var(--panel); border-left: 3px solid var(--accent); border-radius: 6px; padding: .7em 1em; margin: 0 0 1rem; }
+main > .notice a { color: var(--accent); }
 
 header { display: flex; align-items: center; gap: 1rem; padding: .8rem 1.5rem; background: #0b0d10; position: sticky; top: 0; z-index: 5; }
 .brand { font-weight: 700; letter-spacing: .02em; color: var(--accent); }

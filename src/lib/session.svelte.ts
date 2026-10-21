@@ -3,15 +3,21 @@
 import type { Library, Me } from './sdk/overfin.js';
 import { overfin } from './client';
 
-export const session = $state<{ me: Me | null; libraries: Library[]; discovery: boolean }>({
-  me: null, libraries: [], discovery: false,
+export const session = $state<{ me: Me | null; libraries: Library[]; discovery: boolean; kidsNeedLimits: boolean }>({
+  me: null, libraries: [], discovery: false, kidsNeedLimits: false,
 });
 
 /** offersDiscovery asks the server whether it offers discovery (it does once
- * Seerr is connected), for profiles that may use it (not kids, for now). */
+ * Seerr is connected). */
 export async function offersDiscovery(): Promise<boolean> {
-  if (session.me?.activeProfile?.kind === 'kids') return false;
   return overfin.discover('trending', 'movie', { limit: 1 }).then(() => true, () => false);
+}
+
+/** kidsNeedLimits says, for the owner, whether a kids profile has no
+ * limits yet (it shows nothing until they're chosen). */
+export async function kidsNeedLimits(): Promise<boolean> {
+  if (!session.me?.activeProfile?.owner) return false;
+  return overfin.profiles().then((all) => all.some((p) => p.ceilingsNeeded), () => false);
 }
 
 /** refresh reloads who's here, after a profile change. */
@@ -19,6 +25,7 @@ export async function refresh() {
   session.me = await overfin.me();
   session.libraries = await overfin.libraries().catch(() => []);
   session.discovery = await offersDiscovery();
+  session.kidsNeedLimits = await kidsNeedLimits();
 }
 
 const pickedKey = 'overfin-web-picked';
