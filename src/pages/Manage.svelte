@@ -1,0 +1,137 @@
+<!-- Profiles and devices. The owner manages every profile (names, kids
+     limits, PINs, deleting) and every device; another profile only its own
+     PIN and devices. -->
+<script lang="ts">
+  import type { Profile } from '../lib/sdk/overfin.js';
+  import { overfin } from '../lib/client';
+  import { confirmed } from '../lib/confirmed';
+  import { confirm } from '../lib/dialog.svelte';
+  import { i18n, t } from '../lib/i18n.svelte';
+  import { replace } from '../lib/router.svelte';
+  import { session } from '../lib/session.svelte';
+  import PageError from '../components/PageError.svelte';
+
+  const me = $derived(session.me?.activeProfile);
+  const pinPattern = '[0-9]{4,8}';
+
+  // Each profile's form, and its message, set up as the profiles load.
+  interface Form { name: string; kids: boolean; ceiling: string; pin: string; message: string }
+  const forms = $state<Record<string, Form>>({});
+  let devicesMessage = $state('');
+
+  let reload = $state(0);
+  async function load() {
+    const [all, ratings, sessions] = await Promise.all([
+      overfin.profiles(),
+      me?.owner ? overfin.ratings() : Promise.resolve([]),
+      overfin.sessions(),
+    ]);
+    const profiles = me?.owner ? all : all.filter((p) => p.id === me?.id);
+    for (const p of profiles) {
+      forms[p.id] = { name: p.name, kids: p.kind === 'kids', ceiling: p.ratingCeiling ?? ratings[0] ?? '', pin: '', message: '' };
+    }
+    return { profiles, ratings, sessions };
+  }
+  const data = $derived.by(() => {
+    void reload;
+    return load();
+  });
+
+  async function act(p: Profile, action: (pin?: string) => Promise<unknown>, pinLabel?: string) {
+    const f = forms[p.id];
+    if (await confirmed(action, (m) => (f.message = m), pinLabel)) reload++;
+  }
+
+  $effect(() => {
+    if (!me) replace('/profiles');
+  });
+</script>
+
+{#if me}
+  <div class="center wide">
+    <h1>{me.owner ? t('manage.titleOwner') : t('manage.titleSelf')}</h1>
+    {#await data}
+      <p class="muted">{t('app.loading')}</p>
+    {:then { profiles, ratings, sessions }}
+      {#each profiles as p (p.id)}
+        {@const f = forms[p.id]}
+        <div class="panel">
+          <h2>
+            {p.name}{#if p.owner}&nbsp;({t('manage.owner')}){/if}{#if p.kind === 'kids'} · {t('manage.kidsUpTo', { rating: p.ratingCeiling ?? '' })}{/if}
+          </h2>
+
+          {#if me.owner}
+            <div class="toolbar">
+              <input bind:value={f.name} maxlength="32" aria-label={t('manage.name')} />
+              <button onclick={() => act(p, () => overfin.updateProfile(p.id, { name: f.name }))}>{t('manage.rename')}</button>
+            </div>
+          {/if}
+
+          <!-- Limits: kids or standard, and the rating ceiling. Changing them
+               needs the owner's PIN, if the owner has one. -->
+          {#if me.owner && !p.owner}
+            <div class="toolbar">
+              <label><input type="checkbox" bind:checked={f.kids} /> {t('manage.kidsProfile')}</label>
+              <select bind:value={f.ceiling} aria-label={t('manage.kidsProfile')}>
+                {#each ratings as rating (rating)}<option value={rating}>{rating}</option>{/each}
+              </select>
+              <button onclick={() => act(p, (pin) => {
+                const change = f.kids ? { kind: 'kids' as const, ratingCeiling: f.ceiling } : { kind: 'standard' as const };
+                return overfin.updateProfile(p.id, pin ? { ...change, pin } : change);
+              }, t('manage.ownerPin'))}>{t('manage.saveLimits')}</button>
+            </div>
+          {/if}
+
+          <!-- PIN: setting one on someone else's profile needs the owner's
+               PIN; changing or removing one needs a fresh login. -->
+          {#if me.owner || (p.id === me.id && p.kind === 'standard')}
+            <div class="toolbar">
+              <input bind:value={f.pin} inputmode="numeric" pattern={pinPattern} maxlength="8"
+                placeholder={t('manage.pinHint')} aria-label={t('manage.newPin')} />
+              <button onclick={() => act(p, (ownerPin) => overfin.setPin(p.id, f.pin, ownerPin), t('manage.ownerPin'))}>
+                {p.hasPin ? t('manage.changePin') : t('manage.setPin')}
+              </button>
+              {#if p.hasPin}
+                <button onclick={() => act(p, () => overfin.removePin(p.id))}>{t('manage.removePin')}</button>
+              {/if}
+            </div>
+          {/if}
+
+          {#if me.owner && !p.owner}
+            <div class="toolbar">
+              <button class="danger" onclick={async () => {
+                if (await confirm(t('manage.deleteConfirm', { name: p.name }), true)) act(p, () => overfin.deleteProfile(p.id));
+              }}>{t('manage.deleteProfile')}</button>
+            </div>
+          {/if}
+          {#if f.message}<p class="error">{f.message}</p>{/if}
+        </div>
+      {/each}
+
+      <!-- Devices signed in: the owner sees all of the account's, others
+           their own. -->
+      <div class="panel">
+        <h2>{t('manage.devices')}</h2>
+        {#each sessions as s (s.id)}
+          <div class="toolbar">
+            <span>{s.device || t('manage.unknownDevice')}{s.profileName ? ` · ${s.profileName}` : ''}{s.current ? ` (${t('manage.thisOne')})` : ''}</span>
+            <span class="muted">{s.lastActiveAt ? new Date(s.lastActiveAt).toLocaleString(i18n.locale) : ''}</span>
+            {#if !s.current}
+              <button onclick={async () => {
+                if (await confirmed(() => overfin.endSession(s.id), (m) => (devicesMessage = m))) reload++;
+              }}>{t('manage.signOut')}</button>
+            {/if}
+          </div>
+        {/each}
+        {#if me.owner && sessions.length > 1}
+          <button onclick={async () => {
+            if (await confirmed(() => overfin.endOtherSessions(), (m) => (devicesMessage = m))) reload++;
+          }}>{t('manage.signOutOthers')}</button>
+        {/if}
+        {#if devicesMessage}<p class="error">{devicesMessage}</p>{/if}
+      </div>
+    {:catch error}
+      <PageError {error} />
+    {/await}
+  </div>
+{/if}
