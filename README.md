@@ -1,9 +1,9 @@
 # overfin-web
 
-The web client of [Overfin](https://github.com/C0PT3R/overfin-gateway), served by
+The web client of [Overfin](https://github.com/C0PT3R/overfin-server), served by
 Overfin by default: a single-page app in [Svelte](https://svelte.dev) and
 TypeScript, on Overfin's
-[JavaScript SDK](https://github.com/C0PT3R/overfin-gateway/tree/main/sdk/js).
+[JavaScript SDK](https://github.com/C0PT3R/overfin-server/tree/main/sdk/js).
 
 - **Account setup**: start fresh, arrive with an invitation, or bring a
   previous account over.
