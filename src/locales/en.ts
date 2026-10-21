@@ -48,6 +48,7 @@ export default {
   'discover.episodes.one': '{count} episode',
   'discover.episodes.other': '{count} episodes',
   'discover.cast': 'Cast',
+  'tmdb.notice': 'This product uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.',
 
   'library.sort': 'Sort',
   'library.sort.name': 'Name',

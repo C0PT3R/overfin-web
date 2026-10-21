@@ -49,6 +49,7 @@ const fr: Record<keyof typeof en, string> = {
   'discover.episodes.one': '{count} épisode',
   'discover.episodes.other': '{count} épisodes',
   'discover.cast': 'Distribution',
+  'tmdb.notice': 'Ce produit utilise TMDB et les API de TMDB, sans être approuvé, certifié ni validé de quelque façon par TMDB.',
 
   'library.sort': 'Trier',
   'library.sort.name': 'Nom',

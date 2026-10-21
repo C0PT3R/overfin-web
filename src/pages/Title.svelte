@@ -5,6 +5,7 @@
   import { t, tn, type Key } from '../lib/i18n.svelte';
   import { play } from '../lib/play';
   import PageError from '../components/PageError.svelte';
+  import TMDBNotice from '../components/TMDBNotice.svelte';
 
   let { kind, tmdbId }: { kind: string; tmdbId: string } = $props();
 
@@ -61,6 +62,7 @@
       <h2>{t('discover.cast')}</h2>
       <p class="muted">{title.cast.map((c) => c.character ? `${c.name} (${c.character})` : c.name).join(', ')}</p>
     {/if}
+    <TMDBNotice />
   {:catch error}
     <PageError {error} />
   {/await}

@@ -1,12 +1,10 @@
 <!-- Discover: what's trending, popular and upcoming, films and series, with
      what the library has and what it doesn't. -->
 <script lang="ts">
-  import type { CatalogTitle } from '../lib/sdk/overfin.js';
-  import { overfin } from '../lib/client';
   import { t, type Key } from '../lib/i18n.svelte';
   import { replace } from '../lib/router.svelte';
-  import CatalogCard from '../components/CatalogCard.svelte';
-  import PageError from '../components/PageError.svelte';
+  import DiscoverRow from '../components/DiscoverRow.svelte';
+  import TMDBNotice from '../components/TMDBNotice.svelte';
 
   let { params }: { params: URLSearchParams } = $props();
 
@@ -24,11 +22,13 @@
     { list: 'upcoming', kind: 'series', key: 'discover.upcomingSeries' },
   ] as const;
 
-  async function load(show: Show) {
-    return Promise.all(rows.map(async (row) => ({
-      ...row,
-      items: (await overfin.discover(row.list, row.kind, { availability: show, limit: 20 })).items as CatalogTitle[],
-    })));
+  // How many rows answered, and whether any had titles: "nothing here"
+  // only once they all have.
+  let answered = $state(0);
+  let any = $state(false);
+  function found(has: boolean) {
+    answered++;
+    any ||= has;
   }
 </script>
 
@@ -42,22 +42,12 @@
   </div>
 </div>
 
-{#await load(show)}
+{#if answered < rows.length && !any}
   <p class="muted">{t('app.loading')}</p>
-{:then result}
-  {#if result.every((row) => !row.items.length)}
-    <p class="muted">{t('common.nothingYet')}</p>
-  {/if}
-  {#each result as row (row.key)}
-    {#if row.items.length}
-      <h2>{t(row.key)}</h2>
-      <div class="row">
-        {#each row.items as title (title.mediaKind + title.tmdbId)}
-          <CatalogCard {title} />
-        {/each}
-      </div>
-    {/if}
-  {/each}
-{:catch error}
-  <PageError {error} />
-{/await}
+{:else if answered === rows.length && !any}
+  <p class="muted">{t('common.nothingYet')}</p>
+{/if}
+{#each rows as row (row.key)}
+  <DiscoverRow title={t(row.key)} list={row.list} kind={row.kind} availability={show} {found} />
+{/each}
+<TMDBNotice />
