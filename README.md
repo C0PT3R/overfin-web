@@ -14,6 +14,10 @@ TypeScript, on Overfin's
   PIN or a fresh login when the server wants one.
 - **Account**: downloading your data, deleting your account.
 - **Home**: continue watching, next up, the watchlist, latest per library.
+- **Discover**, when the server offers it: trending, popular and upcoming
+  films and series, everything or only what the library has or doesn't
+  have yet; a title's page with its seasons' place in the library, and Play
+  when it's there.
 - **Libraries**: sorting, a repeatable shuffle, infinite scroll.
 - **Title pages**: series, seasons, episodes, cast, the watchlist.
 - **Player**: Overfin picks direct play, repackaging or transcoding from what
@@ -23,7 +27,7 @@ TypeScript, on Overfin's
 
 Every screen has a real address (`/item/…`, `/library/…?sort=name`), so a
 reload, a bookmark or a shared link comes back to it, through the login if
-need be. The gateway answers those paths with the app.
+need be. Overfin answers those paths with the app.
 
 ## How it's built
 

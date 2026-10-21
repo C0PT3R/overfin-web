@@ -4,11 +4,12 @@
   import { explain, isError, overfin } from './lib/client';
   import { t } from './lib/i18n.svelte';
   import { go, router } from './lib/router.svelte';
-  import { picked, session } from './lib/session.svelte';
+  import { offersDiscovery, picked, session } from './lib/session.svelte';
   import Dialog from './components/Dialog.svelte';
   import Header from './components/Header.svelte';
   import PageError from './components/PageError.svelte';
   import Account from './pages/Account.svelte';
+  import Discover from './pages/Discover.svelte';
   import Home from './pages/Home.svelte';
   import Item from './pages/Item.svelte';
   import Library from './pages/Library.svelte';
@@ -17,6 +18,7 @@
   import Player from './pages/Player.svelte';
   import Profiles from './pages/Profiles.svelte';
   import Setup from './pages/Setup.svelte';
+  import Title from './pages/Title.svelte';
 
   type Phase =
     | { kind: 'loading' }
@@ -38,6 +40,7 @@
     }
     const [libraries, profiles] = await Promise.all([overfin.libraries().catch(() => []), overfin.profiles()]);
     session.libraries = libraries;
+    session.discovery = await offersDiscovery();
     // "Who's watching?" once per tab, when there's a choice.
     const where = router.route.parts[0];
     if ((!session.me.activeProfile || (profiles.length > 1 && !picked())) && where !== 'play' && where !== 'profiles') {
@@ -79,6 +82,10 @@
         <Library id={route.parts[1]} params={route.params} />
       {:else if route.parts[0] === 'item' && route.parts[1]}
         <Item id={route.parts[1]} />
+      {:else if route.parts[0] === 'discover'}
+        <Discover params={route.params} />
+      {:else if route.parts[0] === 'title' && route.parts[1] && route.parts[2]}
+        <Title kind={route.parts[1]} tmdbId={route.parts[2]} />
       {:else if route.parts[0] === 'person' && route.parts[1]}
         <Person id={route.parts[1]} />
       {:else if route.parts[0] === 'play' && route.parts[1]}
