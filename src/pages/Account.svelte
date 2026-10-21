@@ -1,7 +1,7 @@
 <!-- The account: downloading one's data, deleting the account. Both need a
      fresh login, or the profile's PIN. -->
 <script lang="ts">
-  import { overfin } from '../lib/client';
+  import { explain, overfin } from '../lib/client';
   import { confirmed } from '../lib/confirmed';
   import { confirm, notice } from '../lib/dialog.svelte';
   import { t } from '../lib/i18n.svelte';
@@ -22,6 +22,16 @@
     }, (m) => (message = m));
   }
 
+  async function clearHistory() {
+    if (!(await confirm(t('account.clearConfirm'), true))) return;
+    try {
+      await overfin.clearHistory();
+      await notice(t('account.cleared'));
+    } catch (err) {
+      message = explain(err);
+    }
+  }
+
   async function remove() {
     if (!(await confirm(t('account.deleteConfirm'), true))) return;
     await confirmed(async () => {
@@ -39,6 +49,12 @@
     <div class="panel">
       <p>{profile?.owner ? t('account.dataOwner') : t('account.dataProfile')}</p>
       <button onclick={download}>{t('account.download')}</button>
+    </div>
+  {/if}
+  {#if profile?.kind !== 'kids'}
+    <div class="panel">
+      <p>{t('account.historyText')}</p>
+      <button onclick={clearHistory}>{t('account.clearHistory')}</button>
     </div>
   {/if}
   {#if profile?.owner}

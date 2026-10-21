@@ -5,7 +5,7 @@
   import { overfin } from '../lib/client';
   import { t } from '../lib/i18n.svelte';
 
-  let { item, wide = false }: { item: ItemSummary; wide?: boolean } = $props();
+  let { item, wide = false, remove }: { item: ItemSummary; wide?: boolean; remove?: () => void } = $props();
 
   const image = $derived(wide ? (item.images?.thumb ?? item.images?.backdrops?.[0] ?? item.images?.primary) : item.images?.primary);
   const progress = $derived(item.userState?.positionMs && item.durationMs
@@ -17,17 +17,23 @@
   });
 </script>
 
-<a class="card" href="/item/{item.id}">
-  <div class="poster" class:wide>
-    {#if image}
-      <img src={overfin.imageUrl(image, 'small')} alt="" loading="lazy" />
-    {:else}
-      <div class="fallback">{item.name}</div>
-    {/if}
-    {#if progress}
-      <div class="progress" style:width="{progress}%"></div>
-    {/if}
-  </div>
-  <div class="title">{item.name}</div>
-  <div class="sub">{sub}</div>
-</a>
+<div class="cardbox">
+  <a class="card" href="/item/{item.id}">
+    <div class="poster" class:wide>
+      {#if image}
+        <img src={overfin.imageUrl(image, 'small')} alt="" loading="lazy" />
+      {:else}
+        <div class="fallback">{item.name}</div>
+      {/if}
+      {#if progress}
+        <div class="progress" style:width="{progress}%"></div>
+      {/if}
+    </div>
+    <div class="title">{item.name}</div>
+    <div class="sub">{sub}</div>
+  </a>
+  {#if remove}
+    <button class="remove" type="button" title={t('home.removeFromContinue')} aria-label={t('home.removeFromContinue')}
+      onclick={remove}>✕</button>
+  {/if}
+</div>

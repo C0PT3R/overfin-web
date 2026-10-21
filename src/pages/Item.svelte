@@ -34,6 +34,16 @@
     onList = !onList;
     await (onList ? overfin.addToWatchlist(id) : overfin.removeFromWatchlist(id));
   }
+
+  // Watched and favorite, as the profile marks them: what the server says
+  // back replaces what the page loaded.
+  let marks = $state<{ played?: boolean; favorite?: boolean }>({});
+  async function togglePlayed(now: boolean) {
+    marks.played = (await overfin.setPlayed(id, !now)).played;
+  }
+  async function toggleFavorite(now: boolean) {
+    marks.favorite = (await overfin.setFavorite(id, !now)).favorite;
+  }
 </script>
 
 {#await load()}
@@ -80,6 +90,12 @@
           {/if}
           {#if listable.has(item.kind) && onList !== null}
             <button onclick={toggleList}>{onList ? t('item.watchlistOn') : t('item.watchlistAdd')}</button>
+          {/if}
+          {#if listable.has(item.kind)}
+            {@const played = marks.played ?? item.userState?.played ?? false}
+            {@const favorite = marks.favorite ?? item.userState?.favorite ?? false}
+            <button onclick={() => togglePlayed(played)}>{played ? t('item.markUnwatched') : t('item.markWatched')}</button>
+            <button onclick={() => toggleFavorite(favorite)}>{favorite ? t('item.favoriteOn') : t('item.favoriteAdd')}</button>
           {/if}
         </div>
         {#if item.overview}<p>{item.overview}</p>{/if}

@@ -16,6 +16,13 @@
     ]);
     return { resume, nextUp, watchlist, latest };
   }
+
+  // Titles taken out of Continue Watching here, hidden at once.
+  let removed = $state<string[]>([]);
+  async function forget(item: { id: string }) {
+    removed = [...removed, item.id];
+    await overfin.forgetProgress(item.id).catch(() => (removed = removed.filter((id) => id !== item.id)));
+  }
 </script>
 
 {#await load()}
@@ -25,7 +32,7 @@
   {#if empty}
     <p class="muted">{t('common.nothingYet')}</p>
   {/if}
-  <Row title={t('home.continue')} items={home.resume} wide />
+  <Row title={t('home.continue')} items={home.resume.filter((i) => !removed.includes(i.id))} wide remove={forget} />
   <Row title={t('home.nextUp')} items={home.nextUp} wide />
   <Row title={t('home.watchlist')} items={home.watchlist} />
   {#each home.latest as { library, items } (library.id)}
