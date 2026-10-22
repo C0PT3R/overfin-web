@@ -1,3 +1,3 @@
-module github.com/C0PT3R/overfin-web
+module github.com/overfin/web
 
 go 1.26.9

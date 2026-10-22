@@ -1,9 +1,9 @@
 # overfin-web
 
-The web client of [Overfin](https://github.com/C0PT3R/overfin-server), served by
+The web client of [Overfin](https://github.com/overfin/server), served by
 Overfin by default: a single-page app in [Svelte](https://svelte.dev) and
 TypeScript, on Overfin's
-[JavaScript SDK](https://github.com/C0PT3R/overfin-server/tree/main/sdk/js).
+[JavaScript SDK](https://github.com/overfin/server/tree/main/sdk/js).
 
 - **Account setup**: start fresh, arrive with an invitation, or bring a
   previous account over.
@@ -74,7 +74,7 @@ updates.
 
 overfin-web is its own app, on Overfin's public API like any other client.
 Overfin's official build bundles it (`web.Files`, imported as
-`github.com/C0PT3R/overfin-web`), and Overfin serves it at the site's root,
+`github.com/overfin/web`), and Overfin serves it at the site's root,
 to logged-in visitors only. The core never imports it; a build chooses its
 site, or none. It needs the `library` and `playback` plugins.
 
